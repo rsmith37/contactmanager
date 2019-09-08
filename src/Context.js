@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from 'axios'
 
 const Context = React.createContext();
 
@@ -11,10 +12,15 @@ const reducer = (state, action) => {
                     contact.id !== action.payload)
             };
         case 'ADD_CONTACT': 
-        return {
-            ...state,
-            contacts: [action.payload, ...state.contacts]
-        };
+            return {
+                ...state,
+                contacts: [action.payload, ...state.contacts]
+            };
+        case 'UPDATE_CONTACT':
+            return {
+                ...state,
+                contacts: state.contacts.map(contact => contact.id === action.payload.id ? (contact = action.payload) : contact)
+            };
         default:
             return state;
     }
@@ -22,30 +28,19 @@ const reducer = (state, action) => {
 
 export class Provider extends Component {
     state = {
-        contacts: [
-            {
-                id: 1,
-                name: 'John Doe',
-                email: 'jdoe@gmail.com',
-                phone: '555-555-5555'
-            },
-            {
-                id: 2,
-                name: 'Karen Williams',
-                email: 'kwilliams@gmail.com',
-                phone: '222-222-2222'
-            },
-            {
-                id: 3,
-                name: 'Henry Johnson',
-                email: 'hjohnson@gmail.com',
-                phone: '999-999-9999'
-            }
-        ],
+        contacts: [],
         dispatch: action => {
             this.setState(state => reducer(state, action))
         }
     };
+
+    async componentDidMount() {
+        // need to use await with async
+        const res = await axios.get('https://jsonplaceholder.typicode.com/users');
+        
+        // will not get called until await line above completes
+        this.setState({contacts: res.data});
+    }
 
     render() {
         return (
